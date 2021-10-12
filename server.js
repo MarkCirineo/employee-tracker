@@ -29,6 +29,54 @@ const addDepartment = () => {
             });
 }
 
+const roleQuestions = [
+    {
+        type: "input",
+        message: "Enter the name of the role you want to add.",
+        name: "name"
+    },
+    {
+        type: "input",
+        message: "Enter the salary of the role.",
+        name: "salary"
+    },
+    {
+        type: "list",
+        message: "Which department does the role belong to.",
+        name: "department",
+        choices: []
+    }
+]
+
+const addRole = () => {
+    roleQuestions[2].choices = []
+    
+    db.query("SELECT id, name FROM department", (err, results) => {
+        if (err) {
+            console.error(err)
+        }
+        results.forEach((department) => {
+            roleQuestions[2].choices.push(department.name)
+        });
+        inquirer
+            .prompt(roleQuestions)
+                .then(data => {
+                    let department_id = "";
+                    results.forEach(department => {
+                        if (department.name === data.department) {
+                            department_id = department.id;
+                        }
+                    })
+                    db.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, [data.name, data.salary, department_id], (err, results) => {
+                        if (err) {
+                            console.error(err);
+                        }
+                        console.table(`Successfully added ${data.name} to the database.`);
+                    })
+                });
+    });
+}
+
 const viewAll = (table) => {
     const viewAllQuery = "SELECT * FROM "; //todo: add a join here (might need separate function to get all required columns)
     db.query(viewAllQuery + table, (err, results) => {
@@ -66,7 +114,7 @@ const init = () => {
                         addDepartment();
                         break;
                     case "Add a role":
-
+                        addRole();
                         break;
                     case "Add an employee":
 
