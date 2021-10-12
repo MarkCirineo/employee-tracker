@@ -146,6 +146,63 @@ const addEmployee = () => {
     });
 }
 
+const updateEmployeeQuestions = [
+    {
+        type: "list",
+        message: "Enter the name of the employee you would like to update.",
+        name: "chosenEmployee",
+        choices: []
+    },
+    {
+        type: "list",
+        message: "What is this employee's new role?",
+        name: "newRole",
+        choices: []
+    }
+]
+
+const updateEmployee = () => {
+    updateEmployeeQuestions[0].choices = [];
+    updateEmployeeQuestions[1].choices = [];
+
+    db.query("SELECT id, first_name, last_name FROM employee", (err, results) => {
+        if (err) {
+            console.error(err)
+        }
+        results.forEach(employee => {
+            updateEmployeeQuestions[0].choices.push(employee.first_name + " " + employee.last_name);
+        });
+        db.query("SELECT id, title FROM role", (err, roleResults) => {
+            if (err) {
+                console.error(err)
+            }
+            roleResults.forEach(role => {
+                updateEmployeeQuestions[1].choices.push(role.title)
+                console.log(role.title)
+            })
+            inquirer
+                .prompt(updateEmployeeQuestions)
+                    .then(data => {
+                        let nameArr = data.chosenEmployee.split(" ");
+                        let firstName = nameArr[0]
+                        let lastName = nameArr[1]
+                        let roleId = "";
+                        roleResults.forEach(role => {
+                            if (role.title === data.newRole) {
+                                roleId = role.id;
+                            }
+                        })
+                        db.query(`UPDATE employee SET role_id = ? WHERE first_name = ? AND last_name = ?`, [roleId, firstName, lastName], (err, results) => {
+                            if (err) {
+                                console.error(err);
+                            }
+                            console.table(`Successfully added ${data.firstName} to the database.`);
+                        })
+                    });
+        })        
+    })
+}
+
 const viewAll = (table) => {
     const viewAllQuery = "SELECT * FROM "; //todo: add a join here (might need separate function to get all required columns)
     db.query(viewAllQuery + table, (err, results) => {
@@ -160,8 +217,8 @@ const initQuestion = [
     {
         type: "list",
         message: "What would you like to do?",
-        name: "firstAction", //TODO: add the rest of the option below:
-        choices: ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee"]
+        name: "firstAction",
+        choices: ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee", "Quit"]
     }
 ]
 
@@ -188,6 +245,11 @@ const init = () => {
                     case "Add an employee":
                         addEmployee();
                         break;
+                    case "Update an employee":
+                        updateEmployee();
+                        break;
+                    case "Quit": //! fix this?
+                        return;
                 }
             })
 }
