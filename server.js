@@ -8,9 +8,29 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+const departmentQuestions = [
+    {
+        type: "input",
+        message: "Enter the name of the department you want to add.",
+        name: "name"
+    }
+]
+
+const addDepartment = () => {
+    inquirer
+        .prompt(departmentQuestions)
+            .then(data => {
+                db.query(`INSERT INTO department (name) VALUES (?)`, data.name, (err, results) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                    console.table(`Successfully added ${data.name} to the database.`);
+                })
+            });
+}
 
 const viewAll = (table) => {
-    const viewAllQuery = "SELECT * FROM ";
+    const viewAllQuery = "SELECT * FROM "; //todo: add a join here (might need separate function to get all required columns)
     db.query(viewAllQuery + table, (err, results) => {
         if (err) {
             console.error(err);
@@ -43,7 +63,7 @@ const init = () => {
                         viewAll("employee");
                         break;
                     case "Add a department":
-
+                        addDepartment();
                         break;
                     case "Add a role":
 
