@@ -42,7 +42,7 @@ const roleQuestions = [
     },
     {
         type: "list",
-        message: "Which department does the role belong to.",
+        message: "Which department does the role belong to?",
         name: "department",
         choices: []
     }
@@ -77,6 +77,75 @@ const addRole = () => {
     });
 }
 
+const employeeQuestions = [
+    {
+        type: "input",
+        message: "Enter the first name of the employee you want to add.",
+        name: "firstName"
+    },
+    {
+        type: "input",
+        message: "Enter the last name of the employee you want to add.",
+        name: "lastName"
+    },
+    {
+        type: "list",
+        message: "Which role does the employee have?",
+        name: "role",
+        choices: []
+    },
+    {
+        type: "list",
+        message: "Who is the employee's manager?",
+        name: "manager",
+        choices: []
+    }
+]
+
+const addEmployee = () => {
+    employeeQuestions[2].choices = [];
+    employeeQuestions[3].choices = [];
+    
+    db.query("SELECT id, title FROM role", (err, results) => {
+        if (err) {
+            console.error(err)
+        }
+        results.forEach((role) => {
+            employeeQuestions[2].choices.push(role.title);
+        });
+        db.query("SELECT id, first_name, last_name FROM employee", (err, employeeResults) => {
+            if (err) {
+                console.error(err)
+            }
+            employeeResults.forEach(role => {
+                employeeQuestions[3].choices.push(role.first_name + " " + role.last_name)
+            })
+            inquirer
+                .prompt(employeeQuestions)
+                    .then(data => {
+                        let roleId = "";
+                        let managerId = "";
+                        results.forEach(role => {
+                            if (role.title === data.role) {
+                                roleId = role.id;
+                            }
+                        })
+                        employeeResults.forEach(manager => {
+                            if (manager.first_name + " " + manager.last_name === data.manager) {
+                                managerId = manager.id;
+                            }
+                        })
+                        db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, [data.firstName, data.lastName, roleId, managerId], (err, results) => {
+                            if (err) {
+                                console.error(err);
+                            }
+                            console.table(`Successfully added ${data.firstName} to the database.`);
+                        })
+                    });
+        })
+    });
+}
+
 const viewAll = (table) => {
     const viewAllQuery = "SELECT * FROM "; //todo: add a join here (might need separate function to get all required columns)
     db.query(viewAllQuery + table, (err, results) => {
@@ -91,7 +160,7 @@ const initQuestion = [
     {
         type: "list",
         message: "What would you like to do?",
-        name: "firstAction",
+        name: "firstAction", //TODO: add the rest of the option below:
         choices: ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee"]
     }
 ]
@@ -117,7 +186,7 @@ const init = () => {
                         addRole();
                         break;
                     case "Add an employee":
-
+                        addEmployee();
                         break;
                 }
             })
