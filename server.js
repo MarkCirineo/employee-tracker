@@ -1,6 +1,7 @@
 const express = require("express");
 const inquirer = require("inquirer");
 const db = require("./connection");
+const cTable = require("console.table");
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -24,7 +25,7 @@ const addDepartment = () => {
                     if (err) {
                         console.error(err);
                     }
-                    console.table(`Successfully added ${data.name} to the database.`);
+                    console.log(`Successfully added ${data.name} to the database.`);
                     init();
                 })
             });
@@ -72,7 +73,7 @@ const addRole = () => {
                         if (err) {
                             console.error(err);
                         }
-                        console.table(`Successfully added ${data.name} to the database.`);
+                        console.log(`Successfully added ${data.name} to the database.`);
                         init();
                     })
                 });
@@ -143,7 +144,7 @@ const addEmployee = () => {
                             if (err) {
                                 console.error(err);
                             }
-                            console.table(`Successfully added ${data.firstName} to the database.`);
+                            console.log(`Successfully added ${data.firstName} to the database.`);
                             init();
                         })
                     });
@@ -201,7 +202,7 @@ const updateEmployee = () => {
                             if (err) {
                                 console.error(err);
                             }
-                            console.table(`Successfully update ${firstName}'s role.`);
+                            console.log(`Successfully update ${firstName}'s role.`);
                             init();
                         })
                     });
@@ -223,7 +224,9 @@ const viewAll = (table) => {
         if (err) {
             console.error(err);
         }
-        console.table(results)
+        const viewAllTable = cTable.getTable(results);
+        // console.table(results)
+        console.log(viewAllTable);
         init();
     });
     
