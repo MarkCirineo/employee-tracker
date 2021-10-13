@@ -106,7 +106,7 @@ const employeeQuestions = [
 
 const addEmployee = () => {
     employeeQuestions[2].choices = [];
-    employeeQuestions[3].choices = [];
+    employeeQuestions[3].choices = ["None"];
     
     db.query("SELECT id, title FROM role", (err, results) => {
         if (err) {
@@ -135,6 +135,8 @@ const addEmployee = () => {
                         employeeResults.forEach(manager => {
                             if (manager.first_name + " " + manager.last_name === data.manager) {
                                 managerId = manager.id;
+                            } else {
+                                managerId = null;
                             }
                         })
                         db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, [data.firstName, data.lastName, roleId, managerId], (err, results) => {
@@ -199,7 +201,7 @@ const updateEmployee = () => {
                             if (err) {
                                 console.error(err);
                             }
-                            console.table(`Successfully added ${data.firstName} to the database.`);
+                            console.table(`Successfully update ${firstName}'s role.`);
                             init();
                         })
                     });
