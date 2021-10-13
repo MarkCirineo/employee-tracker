@@ -204,8 +204,16 @@ const updateEmployee = () => {
 }
 
 const viewAll = (table) => {
-    const viewAllQuery = "SELECT * FROM "; //todo: add a join here (might need separate function to get all required columns)
-    db.query(viewAllQuery + table, (err, results) => {
+    let viewAllQuery = "";
+    if (table === "department") {
+        viewAllQuery = "SELECT * FROM department";
+    } else if (table === "role") {
+        viewAllQuery = "SELECT role.id, role.title, role.salary, department.name AS department FROM role JOIN department ON role.department_id = department.id ";
+    } else if (table === "employee") {
+        viewAllQuery = "SELECT a.id, CONCAT(a.first_name, ' ', a.last_name) AS name, CONCAT(b.first_name, ' ', b.last_name) AS manager, role.title, role.salary, department.name AS department FROM employee a LEFT JOIN employee b ON a.manager_id = b.id JOIN role ON a.role_id = role.id JOIN department ON role.department_id = department.id"; //  role.title, role.salary, department.name AS department  |   JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id
+        // SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name AS department FROM employee JOIN department ON role.department_id = department.id JOIN role ON employee.role_id = role.id  "AND employee.manager_id = role.id"
+    }
+    db.query(viewAllQuery, (err, results) => {
         if (err) {
             console.error(err);
         }
@@ -248,7 +256,7 @@ const init = () => {
                     case "Update an employee":
                         updateEmployee();
                         break;
-                    case "Quit": //! fix this?
+                    case "Quit":
                         return;
                 }
             })
